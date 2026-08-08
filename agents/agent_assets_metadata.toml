@@ -1,8 +1,0 @@
-uploads = []
-outputs = []
-
-[[generated]]
-id = "Xwa6NCJgQa8SzqSeJdouE"
-uri = "file://artifacts/mc-lookup/public/favicon.png"
-type = "image"
-title = "Minecraft grass block play button"

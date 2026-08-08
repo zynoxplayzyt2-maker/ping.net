@@ -1,0 +1,251 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Minecraft server lookup API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: server
+    description: Minecraft server lookup
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /server/{edition}/{address}:
+    get:
+      operationId: lookupServer
+      tags: [server]
+      summary: Look up a Minecraft server
+      description: Returns ping, MOTD, players, plugins, version, software, icon and geo location for a Minecraft server (Java or Bedrock).
+      parameters:
+        - name: edition
+          in: path
+          required: true
+          description: Minecraft edition
+          schema:
+            type: string
+            enum: [java, bedrock]
+        - name: address
+          in: path
+          required: true
+          description: "Server host or host:port (e.g. mc.hypixel.net or play.example.com:25566)"
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Server lookup result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerLookup"
+  /history:
+    get:
+      operationId: listHistory
+      tags: [server]
+      summary: Recent server lookups
+      description: Returns the most recent server lookups performed by users.
+      responses:
+        "200":
+          description: List of recent lookups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HistoryEntry"
+  /popular:
+    get:
+      operationId: listPopular
+      tags: [server]
+      summary: Most-looked-up servers
+      description: Returns the most frequently looked-up Minecraft servers.
+      responses:
+        "200":
+          description: Popular servers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PopularEntry"
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    ServerPlayer:
+      type: object
+      properties:
+        name:
+          type: string
+        id:
+          type: string
+      required:
+        - name
+    ServerLocation:
+      type: object
+      properties:
+        ip:
+          type: string
+        country:
+          type: string
+        countryCode:
+          type: string
+        region:
+          type: string
+        city:
+          type: string
+        isp:
+          type: string
+        org:
+          type: string
+        lat:
+          type: number
+        lon:
+          type: number
+        timezone:
+          type: string
+    ServerLookup:
+      type: object
+      properties:
+        online:
+          type: boolean
+        edition:
+          type: string
+          enum: [java, bedrock]
+        host:
+          type: string
+        port:
+          type: integer
+        ip:
+          type: string
+        motd:
+          type: array
+          items:
+            type: string
+          description: MOTD lines (cleaned, no formatting codes)
+        motdHtml:
+          type: array
+          items:
+            type: string
+          description: MOTD lines as HTML with color spans
+        version:
+          type: string
+        software:
+          type: string
+        protocol:
+          type: integer
+        pingMs:
+          type: integer
+        playersOnline:
+          type: integer
+        playersMax:
+          type: integer
+        playersSample:
+          type: array
+          items:
+            $ref: "#/components/schemas/ServerPlayer"
+        plugins:
+          type: array
+          items:
+            type: string
+        mods:
+          type: array
+          items:
+            type: string
+        iconBase64:
+          type: string
+          description: Server icon as a data URL (image/png;base64,...)
+        gamemode:
+          type: string
+        serverId:
+          type: string
+        location:
+          $ref: "#/components/schemas/ServerLocation"
+        eulaBlocked:
+          type: boolean
+      required:
+        - online
+        - edition
+        - host
+        - port
+    HistoryEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        edition:
+          type: string
+          enum: [java, bedrock]
+        address:
+          type: string
+        online:
+          type: boolean
+        playersOnline:
+          type: integer
+        playersMax:
+          type: integer
+        version:
+          type: string
+        country:
+          type: string
+        countryCode:
+          type: string
+        iconBase64:
+          type: string
+        lookedUpAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - edition
+        - address
+        - online
+        - lookedUpAt
+    PopularEntry:
+      type: object
+      properties:
+        edition:
+          type: string
+          enum: [java, bedrock]
+        address:
+          type: string
+        lookups:
+          type: integer
+        lastOnline:
+          type: boolean
+        lastPlayersOnline:
+          type: integer
+        lastPlayersMax:
+          type: integer
+        version:
+          type: string
+        country:
+          type: string
+        countryCode:
+          type: string
+        iconBase64:
+          type: string
+      required:
+        - edition
+        - address
+        - lookups
